@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="ShipMS - Intelligent Ship & Fleet Management System Authentication Portal" />
+  <title>ShipMS | Fleet Command Authentication</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  
+  <!-- Font Awesome Icons for crisp maritime and UI icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Interactive Canvas Background (Constellation Sea Route Nodes) -->
+  <canvas id="seaCanvas"></canvas>
+
+  <!-- Ambient Oceanic Glow Spheres -->
+  <div class="ambient-glow glow-top-left"></div>
+  <div class="ambient-glow glow-bottom-right"></div>
+  <div class="ambient-glow glow-center"></div>
+
+  <!-- Top Navigation / Telemetry Header -->
+  <header class="header">
+    <div class="brand">
+      <div class="helm-logo">
+        <i class="fa-solid fa-dharmachakra fa-spin-slow"></i>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">Ship<span>MS</span></span>
+        <span class="brand-sub">Maritime Fleet Command</span>
+      </div>
+    </div>
+
+    <!-- Live Fleet Status Ticker -->
+    <div class="fleet-status-pill">
+      <span class="radar-dot"></span>
+      <span class="status-label">AIS SYSTEM: <strong class="text-glow">ONLINE</strong></span>
+      <span class="divider">|</span>
+      <span class="vessel-count"><i class="fa-solid fa-ship"></i> 142 Vessels Active</span>
+    </div>
+
+    <!-- Sound & System Controls -->
+    <div class="header-controls">
+      <button id="soundToggle" class="icon-btn" title="Toggle Sci-Fi Interface Audio" aria-label="Toggle Sound">
+        <i class="fa-solid fa-volume-high" id="soundIcon"></i>
+      </button>
+      <div class="utc-clock" id="utcClock" title="Coordinated Universal Time (UTC)">00:00:00 UTC</div>
+    </div>
+  </header>
+
+  <!-- Main Split Slider Auth Card -->
+  <main class="auth-wrapper">
+    <!-- Mobile Tab Switcher (Visible only on smaller screens) -->
+    <div class="mobile-tabs" id="mobileTabs">
+      <button class="mobile-tab-btn active" id="tabSignIn">
+        <i class="fa-solid fa-lock"></i> Sign In
+      </button>
+      <button class="mobile-tab-btn" id="tabSignUp">
+        <i class="fa-solid fa-user-plus"></i> Register
+      </button>
+    </div>
+
+    <div class="auth-container" id="authContainer">
+      
+      <!-- ==============================================
+           SIGN UP / REGISTRATION FORM CONTAINER
+           ============================================== -->
+      <div class="form-container sign-up-container">
+        <form id="registerForm" novalidate>
+          <div class="form-badge">
+            <i class="fa-solid fa-shield-halved"></i> New Commission
+          </div>
+          <h2>Register Officer</h2>
+          <p class="form-desc">Enlist your credentials in the global maritime registry</p>
+
+          <div class="input-group">
+            <i class="fa-regular fa-user input-icon"></i>
+            <input type="text" id="regName" placeholder="Full Officer Name" required autocomplete="name" />
+            <span class="focus-border"></span>
+          </div>
+
+          <div class="input-group">
+            <i class="fa-regular fa-envelope input-icon"></i>
+            <input type="email" id="regEmail" placeholder="Fleet Email / Official ID" required autocomplete="email" />
+            <span class="focus-border"></span>
+          </div>
+
+          <div class="input-row">
+            <div class="input-group flex-1">
+              <i class="fa-solid fa-anchor input-icon"></i>
+              <select id="regRole" required>
+                <option value="" disabled selected>Operational Rank</option>
+                <option value="Fleet Commander">Fleet Commander</option>
+                <option value="Chief Marine Engineer">Chief Engineer</option>
+                <option value="Navigation Officer">Navigation Officer</option>
+                <option value="Cargo & Port Logistics">Logistics Officer</option>
+                <option value="AIS Systems Specialist">AIS Specialist</option>
+              </select>
+              <span class="focus-border"></span>
+            </div>
+
+            <div class="input-group flex-1">
+              <i class="fa-solid fa-compass input-icon"></i>
+              <input type="text" id="regPort" placeholder="Home Berth / Port" required />
+              <span class="focus-border"></span>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <i class="fa-solid fa-key input-icon"></i>
+            <input type="password" id="regPassword" placeholder="Clearance Passcode" required autocomplete="new-password" />
+            <button type="button" class="eye-toggle" data-target="regPassword" aria-label="Toggle password view">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+            <span class="focus-border"></span>
+          </div>
+
+          <!-- Live Password Strength Meter -->
+          <div class="password-meter-wrap" id="pwdMeterWrap">
+            <div class="meter-bar">
+              <div class="meter-progress" id="pwdMeterBar"></div>
+            </div>
+            <div class="meter-label">
+              <span>Security Level: <strong id="pwdStrengthLabel">Enter Password</strong></span>
+              <span id="pwdReqs">Min 8 chars, 1 number & 1 special</span>
+            </div>
+          </div>
+
+          <div class="form-checkbox">
+            <label class="custom-check">
+              <input type="checkbox" id="regTerms" required />
+              <span class="checkmark"></span>
+              <span class="check-text">I acknowledge maritime IMO & SOLAS data compliance protocols.</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-glow" id="btnRegister">
+            <span class="btn-text">Initialize Clearance</span>
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </form>
+      </div>
+
+      <!-- ==============================================
+           SIGN IN / LOGIN FORM CONTAINER
+           ============================================== -->
+      <div class="form-container sign-in-container">
+        <form id="loginForm" novalidate>
+          <div class="form-badge">
+            <i class="fa-solid fa-radar fa-spin-pulse"></i> Command Bridge
+          </div>
+          <h2>Bridge Access</h2>
+          <p class="form-desc">Authorize terminal to connect with live vessel telemetry</p>
+
+          <!-- Quick Demo Profile Selector -->
+          <div class="quick-roles-bar">
+            <span class="quick-title">Quick Demo:</span>
+            <div class="chips-group">
+              <button type="button" class="role-chip" data-email="commander.vikram@shipms.io" data-pass="NavalCommand#2026" data-role="Fleet Commander">
+                👨‍✈️ Commander
+              </button>
+              <button type="button" class="role-chip" data-email="navigator.priya@shipms.io" data-pass="OceanRoute*99" data-role="Navigator">
+                🧭 Navigator
+              </button>
+              <button type="button" class="role-chip" data-email="logistics.admin@shipms.io" data-pass="CargoFleet@77" data-role="Logistics">
+                📦 Logistics
+              </button>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <i class="fa-regular fa-envelope input-icon"></i>
+            <input type="email" id="loginEmail" placeholder="Fleet ID / Officer Email" required autocomplete="username" />
+            <span class="focus-border"></span>
+          </div>
+
+          <div class="input-group">
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input type="password" id="loginPassword" placeholder="Bridge Passcode" required autocomplete="current-password" />
+            <button type="button" class="eye-toggle" data-target="loginPassword" aria-label="Toggle password view">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+            <span class="focus-border"></span>
+          </div>
+
+          <div class="form-options">
+            <label class="custom-check">
+              <input type="checkbox" id="rememberMe" checked />
+              <span class="checkmark"></span>
+              <span class="check-text">Remember Terminal</span>
+            </label>
+            <a href="#" class="forgot-link" id="forgotLink">Reset Key?</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-glow" id="btnLogin">
+            <span class="btn-text">Authorize Bridge Access</span>
+            <i class="fa-solid fa-arrow-right-to-bracket"></i>
+          </button>
+
+          <!-- Terminal Security Footer -->
+          <div class="terminal-footer">
+            <i class="fa-solid fa-fingerprint"></i>
+            <span>256-Bit SHA Encrypted AIS Handshake</span>
+          </div>
+        </form>
+      </div>
+
+      <!-- ==============================================
+           SLIDING OVERLAY CONTAINER
+           ============================================== -->
+      <div class="overlay-container">
+        <div class="overlay">
+          
+          <!-- Overlay Left (Shown in Register Mode) -->
+          <div class="overlay-panel overlay-left">
+            <div class="overlay-badge">
+              <i class="fa-solid fa-dharmachakra"></i> ShipMS Fleet Hub
+            </div>
+            <h1>Already Commissioned?</h1>
+            <p>Access your live ocean fleet coordinates, active vessel telemetry, and real-time cargo logistics dispatch.</p>
+            
+            <div class="vessel-preview-card">
+              <img src="oceanic-explorer.png" alt="Oceanic Explorer" class="ship-img" />
+              <div class="ship-meta">
+                <span class="ship-title">Vessel: MV Oceanic Explorer</span>
+                <span class="ship-stats"><i class="fa-solid fa-location-dot"></i> Indian Ocean • 22.4 Knots</span>
+              </div>
+            </div>
+
+            <button class="btn btn-outline" id="signInBtn">
+              <i class="fa-solid fa-arrow-left"></i>
+              <span>Sign In to Bridge</span>
+            </button>
+          </div>
+
+          <!-- Overlay Right (Shown in Login Mode) -->
+          <div class="overlay-panel overlay-right">
+            <div class="overlay-badge">
+              <i class="fa-solid fa-satellite-dish"></i> Global Sea Grid
+            </div>
+            <h1>New Officer On Deck?</h1>
+            <p>Join over 1,400 certified marine captains and logistics coordinators navigating critical maritime corridors.</p>
+            
+            <div class="telemetry-live-box">
+              <div class="telemetry-item">
+                <span class="t-label">Live Sea Corridors</span>
+                <span class="t-val"><i class="fa-solid fa-route"></i> 84 Active</span>
+              </div>
+              <div class="telemetry-item">
+                <span class="t-label">AIS Node Latency</span>
+                <span class="t-val"><i class="fa-solid fa-bolt"></i> 14 ms</span>
+              </div>
+            </div>
+
+            <button class="btn btn-outline" id="signUpBtn">
+              <span>Register Clearance</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Interactive Feedback Toast Notification -->
+  <div class="toast-notification" id="toast">
+    <div class="toast-icon" id="toastIcon">
+      <i class="fa-solid fa-circle-check"></i>
+    </div>
+    <div class="toast-content">
+      <div class="toast-title" id="toastTitle">Authorization Granted</div>
+      <div class="toast-msg" id="toastMsg">Welcome aboard, Commander.</div>
+    </div>
+    <div class="toast-bar"></div>
+  </div>
+
+  <!-- Verification Scanning Modal (Simulated AIS Handshake) -->
+  <div class="scan-modal" id="scanModal">
+    <div class="scan-card">
+      <div class="radar-scanner">
+        <div class="sweep-circle"></div>
+        <div class="sonar-wave"></div>
+        <i class="fa-solid fa-ship radar-ship-icon"></i>
+      </div>
+      <h3 id="scanModalTitle">Verifying Bridge Clearance...</h3>
+      <p id="scanModalDesc">Establishing 256-Bit TLS AIS Satellite Handshake</p>
+      <div class="scan-progress-bar">
+        <div class="scan-bar-fill" id="scanBarFill"></div>
+      </div>
+      <span class="scan-percentage" id="scanPercent">0%</span>
+    </div>
+  </div>
+
+  <!-- Footer Info -->
+  <footer class="footer">
+    <div class="footer-copy">
+      <span>&copy; 2026 ShipMS Telemetry Systems. All Maritime Rights Reserved.</span>
+    </div>
+    <div class="footer-links">
+      <a href="#compliance"><i class="fa-solid fa-certificate"></i> IMO SOLAS Verified</a>
+      <a href="#security"><i class="fa-solid fa-lock"></i> ISO 27001</a>
+      <a href="#support"><i class="fa-solid fa-headset"></i> Port Dispatch Support</a>
+    </div>
+  </footer>
+
+  <!-- Script File -->
+  <script src="script.js"></script>
+</body>
+</html>

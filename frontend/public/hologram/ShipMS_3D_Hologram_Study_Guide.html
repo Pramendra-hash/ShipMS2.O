@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShipMS 3D Hologram - Complete Study Guide & Documentation</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700;800&family=Rajdhani:wght@600;700&display=swap');
+
+    @page {
+      size: A4;
+      margin: 16mm 16mm 16mm 16mm;
+      @bottom-right {
+        content: counter(page);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      line-height: 1.65;
+      color: #1e293b;
+      background: #ffffff;
+      padding: 24px;
+      font-size: 13.5px;
+    }
+
+    /* Cover / Header Banner */
+    .header-banner {
+      background: linear-gradient(135deg, #04142c 0%, #08284d 60%, #00558f 100%);
+      color: #ffffff;
+      padding: 32px 28px;
+      border-radius: 12px;
+      margin-bottom: 28px;
+      border-left: 6px solid #00f0ff;
+      box-shadow: 0 10px 25px rgba(0, 100, 180, 0.15);
+    }
+
+    .header-banner h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 28px;
+      letter-spacing: 2px;
+      color: #7df9ff;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .header-banner .subtitle {
+      font-size: 14px;
+      color: #bae6fd;
+      font-weight: 400;
+      margin-bottom: 14px;
+    }
+
+    .header-banner .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(0, 240, 255, 0.25);
+      font-size: 11.5px;
+      color: #e0f2fe;
+    }
+
+    .meta-item strong {
+      color: #38bdf8;
+    }
+
+    /* Section Styles */
+    h2 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 20px;
+      color: #0369a1;
+      border-bottom: 2px solid #0284c7;
+      padding-bottom: 5px;
+      margin-top: 26px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      page-break-after: avoid;
+    }
+
+    h3 {
+      font-size: 15px;
+      color: #0f172a;
+      margin-top: 18px;
+      margin-bottom: 8px;
+      page-break-after: avoid;
+    }
+
+    p {
+      margin-bottom: 10px;
+      color: #334155;
+    }
+
+    /* Callout Boxes */
+    .callout {
+      background: #f0f9ff;
+      border-left: 4px solid #0284c7;
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 14px 0;
+      font-size: 12.5px;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      color: #0369a1;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .callout-tech {
+      background: #f8fafc;
+      border-left: 4px solid #3b82f6;
+    }
+
+    /* Code Blocks */
+    pre, code {
+      font-family: 'Fira Code', 'Consolas', monospace;
+    }
+
+    pre {
+      background: #0b1528;
+      color: #e2e8f0;
+      padding: 14px 16px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      line-height: 1.5;
+      overflow-x: auto;
+      margin: 12px 0 16px 0;
+      border: 1px solid #1e293b;
+      page-break-inside: avoid;
+    }
+
+    code.inline {
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 11.5px;
+    }
+
+    /* Syntax Highlighting Sim */
+    .kw { color: #f472b6; font-weight: 600; }
+    .fn { color: #38bdf8; }
+    .str { color: #a3e635; }
+    .num { color: #fbbf24; }
+    .cm { color: #64748b; font-style: italic; }
+    .prop { color: #c084fc; }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 20px 0;
+      font-size: 12px;
+      page-break-inside: avoid;
+    }
+
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    th {
+      background: #f1f5f9;
+      color: #0f172a;
+      font-weight: 700;
+    }
+
+    tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    /* Badges & Pills */
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-primary { background: #e0f2fe; color: #0284c7; }
+    .badge-success { background: #dcfce7; color: #15803d; }
+    .badge-accent { background: #fae8ff; color: #a21caf; }
+
+    /* Architecture Grid */
+    .arch-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin: 14px 0;
+      page-break-inside: avoid;
+    }
+
+    .arch-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px;
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .arch-card h4 {
+      color: #0284c7;
+      font-size: 13.5px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .arch-card ul {
+      margin-left: 18px;
+      font-size: 12px;
+      color: #475569;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+
+    ul, ol {
+      margin-left: 20px;
+      margin-bottom: 10px;
+    }
+
+    li {
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== HEADER BANNER ==================== -->
+  <div class="header-banner">
+    <h1>ShipMS 3D Hologram Project</h1>
+    <div class="subtitle">Complete Technical Architecture & Study Guide | पूर्ण तकनीकी अध्ययन मार्गदर्शिका</div>
+    <div class="meta-grid">
+      <div class="meta-item"><strong>Technology:</strong> Three.js, WebGL, GLSL Shaders</div>
+      <div class="meta-item"><strong>UI Architecture:</strong> Cyber HUD, Post-Processing</div>
+      <div class="meta-item"><strong>Project Type:</strong> 3D Procedural Hologram Matrix</div>
+      <div class="meta-item"><strong>Status:</strong> Production Ready (Offline Standalone)</div>
+    </div>
+  </div>
+
+  <!-- ==================== CHAPTER 1 ==================== -->
+  <h2>1. Overview & Objective (परियोजना का परिचय एवं उद्देश्य)</h2>
+  <p>
+    Yeh project ek <strong>Futuristic Full-Screen 3D Hologram Application</strong> hai, jise Three.js, Custom WebGL/GLSL Shaders aur UnrealBloom Post-Processing ke zariye banaya gaya hai. Iska mukhya aakarshan screen ke center mein sthit ek vishal aur highly-detailed <strong>Ocean-Going 3D Container Vessel (ShipMS / "OCEAN EXPLORER")</strong> hai, jo glowing holographic emitter platform ke upar 3D space mein float aur rotate karta hai.
+  </p>
+
+  <div class="callout">
+    <div class="callout-title">🎯 Mukhya Visheshatayein (Key Features):</div>
+    <ul>
+      <li><strong>100% Real Interactive 3D:</strong> Kisi bhi flat image ka upayog nahi kiya gaya; ship ka har ek hissa (hull, containers, bridge, masts, radar, lifeboats) pure 3D geometry se bana hai.</li>
+      <li><strong>Futuristic Hologram Visuals:</strong> Electric cyan glowing wireframes, semi-transparent body, moving vertical scanlines, aur Fresnel rim lighting.</li>
+      <li><strong>Hologram Base Platform:</strong> Rotating concentric laser rings, radial degree coordinates, aur ek upward curved projection grid funnel jo ship ke hull ko cradle karta hai.</li>
+      <li><strong>Real-Time "HOLOGRAM BRIGHTNESS" Volume Slider:</strong> Ship ke glow/bloom ko 0% se 100% tak live adjust karne ki suvidha taaki 3D model ke sabhi details hamesha saaf aur crisp dikhein.</li>
+    </ul>
+  </div>
+
+  <!-- ==================== CHAPTER 2 ==================== -->
+  <h2>2. Technologies & System Architecture (तकनीकी संरचना)</h2>
+  <p>
+    Is project ko modern web graphics standards ka upayog karke build kiya gaya hai. Isme kisi external backend ya heavy build-tool ki zaroorat nahi hai—yeh 100% standalone aur offline chalta hai.
+  </p>
+
+  <div class="arch-grid">
+    <div class="arch-card">
+      <h4>📦 1. Three.js (r128) & WebGL</h4>
+      <ul>
+        <li><strong>WebGLRenderer:</strong> High-performance hardware accelerated GPU rendering with ACESFilmic tone mapping.</li>
+        <li><strong>PerspectiveCamera:</strong> 45° FOV camera positioned at 3/4 isometric perspective `(34, 18, 38)`.</li>
+        <li><strong>Scene Graph & Groups:</strong> Hierarchical structure dividing Hull, Cargo, Bridge, Platform, and Particles.</li>
+      </ul>
+    </div>
+
+    <div class="arch-card">
+      <h4>⚡ 2. Custom GLSL Shaders</h4>
+      <ul>
+        <li><strong>Vertex Shader:</strong> World matrix, view vectors, aur normals transform karta hai.</li>
+        <li><strong>Fragment Shader:</strong> Mathematical Fresnel glow, sine wave scanlines, aur radar sweep waves generate karta hai.</li>
+        <li><strong>Additive Blending:</strong> Laser light particles aur wireframes ko intense glow deta hai.</li>
+      </ul>
+    </div>
+
+    <div class="arch-card">
+      <h4>✨ 3. Post-Processing Pipeline</h4>
+      <ul>
+        <li><strong>EffectComposer:</strong> Multi-pass rendering buffer pipeline.</li>
+        <li><strong>RenderPass:</strong> Base scene ko capture karta hai.</li>
+        <li><strong>UnrealBloomPass:</strong> Radiant laser neon glow create karta hai without washing out darks.</li>
+      </ul>
+    </div>
+
+    <div class="arch-card">
+      <h4>🔊 4. Web Audio API & Controls</h4>
+      <ul>
+        <li><strong>OrbitControls:</strong> Smooth mouse/touch drag 360° rotation with damping.</li>
+        <li><strong>Web Audio Synthesizer:</strong> Zero external audio files; pure JavaScript mathematical oscillators generate sci-fi hums and clicks.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- ==================== CHAPTER 3 ==================== -->
+  <h2>3. Procedural 3D Ship Architecture (`js/ship-builder.js`)</h2>
+  <p>
+    Ship ko reality ke mutabik ek <strong>Triple-E / Megamax Class Ultra-Large Container Vessel</strong> ke roop mein procedural math dwara create kiya gaya hai. Isme 6 mukhya modules hain:
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Ship Component</th>
+        <th style="width: 40%;">Mathematical / Geometric Technique</th>
+        <th style="width: 35%;">Visual Detail Produced</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>1. Streamlined Hull</strong></td>
+        <td>
+          Custom <code class="inline">THREE.BufferGeometry</code> with parametric lofting curves:<br>
+          <code class="inline">widthFactor = cos(bowT * PI * 0.46) + flare</code>
+        </td>
+        <td>Bulbous bow bulb, sharp flared prow, flat cargo bottom, sheer line lift, transom stern, rudder & propeller hub.</td>
+      </tr>
+      <tr>
+        <td><strong>2. Cargo Containers</strong></td>
+        <td>
+          Nested iteration loops across 8 Bays, 7 Rows, and 4 Tiers above deck:<br>
+          <code class="inline">BoxGeometry(1.05, 1.08, 3.6)</code>
+        </td>
+        <td>200+ individual shipping containers with corrugated edges, holographic color variation, and vertical lashing bridge cell guides.</td>
+      </tr>
+      <tr>
+        <td><strong>3. Superstructure (Bridge)</strong></td>
+        <td>
+          Multi-level tiered block geometry with extended wings:<br>
+          <code class="inline">bridgeWingsWidth = 11.4</code>
+        </td>
+        <td>5-tier accommodation deckhouse, wide navigation bridge wings, wrap-around glowing turquoise cockpit window strip.</td>
+      </tr>
+      <tr>
+        <td><strong>4. Radar Mast & Scanners</strong></td>
+        <td>
+          Cylinder lattice mast + animated rotation objects:<br>
+          <code class="inline">radarBar.rotation.y += speed * delta</code>
+        </td>
+        <td>Main mast, yardarms, dual continuously counter-rotating primary and secondary radar scanner bars, SATCOM domes.</td>
+      </tr>
+      <tr>
+        <td><strong>5. Safety & Forecastle</strong></td>
+        <td>
+          <code class="inline">THREE.ExtrudeGeometry</code> for V-shaped wave deflector breakwater + gravity davits.
+        </td>
+        <td>Forward signal mast, mooring winches, anchor windlasses, and lifeboats mounted on port & starboard wings.</td>
+      </tr>
+      <tr>
+        <td><strong>6. Glowing Hull Typography</strong></td>
+        <td>
+          HTML5 Canvas 2D dynamic text rasterization to <code class="inline">THREE.CanvasTexture</code>.
+        </td>
+        <td>Laser illuminated text <code class="inline">"OCEAN EXPLORER // IMO 9839246"</code> on both sides of the bow.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Dual-Layer Rendering Technique (होलोग्राम वायरफ्रेम + बॉडी कैसे बना):</h3>
+  <p>
+    Har ek 3D object ko 2 layers mein render kiya gaya hai:
+  </p>
+  <pre><span class="cm">// 1. Body layer: Semi-transparent holographic material with Fresnel glow</span>
+<span class="kw">const</span> bodyMat = <span class="kw">this</span>.shaders.<span class="fn">createHologramMaterial</span>(bodyMatOptions);
+<span class="kw">const</span> mesh = <span class="kw">new</span> THREE.<span class="fn">Mesh</span>(geometry, bodyMat);
+group.<span class="fn">add</span>(mesh);
+
+<span class="cm">// 2. Edge layer: Crisp, radiant cyan wireframe outlines</span>
+<span class="kw">const</span> edges = <span class="kw">new</span> THREE.<span class="fn">EdgesGeometry</span>(geometry, <span class="num">20</span>);
+<span class="kw">const</span> lineMat = <span class="kw">this</span>.shaders.<span class="fn">createWireframeEdgeMaterial</span>(edgeColor, edgeOpacity);
+<span class="kw">const</span> line = <span class="kw">new</span> THREE.<span class="fn">LineSegments</span>(edges, lineMat);
+group.<span class="fn">add</span>(line);</pre>
+
+  <!-- ==================== CHAPTER 4 ==================== -->
+  <h2>4. Hologram Platform & Projector Grid (`js/platform-builder.js`)</h2>
+  <p>
+    Reference image ke anusaar ship ke neeche ek futuristic circular holographic platform create kiya gaya hai jisme 4 core elements hain:
+  </p>
+
+  <ul>
+    <li><strong>Concentric Counter-Rotating Rings:</strong> 6 alag-alag radius ke <code class="inline">THREE.TorusGeometry</code> rings jo alag-alag speed aur direction mein ghoomte hain. Inpar 64 radial azimuth degree measurement ticks bane hain.</li>
+    <li><strong>Circular Coordinate Grid Disc:</strong> Canvas API se generate kiya gaya 1024x1024 texture jisme degree markings (0°, 45°, 90°, 180°, 270°, 360°) aur radial coordinate spokes hain.</li>
+    <li><strong>Curved Hyperbolic Projection Funnel:</strong> Base emitter se ship ke hull tak uthne wala ek upward flaring wireframe grid cone jo ship ko laser se project karne ka visual illusion deta hai:
+      <pre><span class="kw">const</span> rX = <span class="num">2.5</span> + Math.<span class="fn">pow</span>(v, <span class="num">1.6</span>) * <span class="num">12.0</span>; <span class="cm">// Parabolic expansion along beam width</span>
+<span class="kw">const</span> rZ = <span class="num">2.5</span> + Math.<span class="fn">pow</span>(v, <span class="num">1.6</span>) * <span class="num">24.0</span>; <span class="cm">// Parabolic expansion along ship length</span></pre>
+    </li>
+    <li><strong>Rising Photon Particles:</strong> 450+ energy motes jo base se nikal kar ship ke charon taraf upward swirl physics ke sath drift karte hain.</li>
+  </ul>
+
+  <div class="page-break"></div>
+
+  <!-- ==================== CHAPTER 5 ==================== -->
+  <h2>5. Holographic GLSL Shader Math (`js/hologram-shaders.js`)</h2>
+  <p>
+    Hologram ka visual magic custom GLSL (OpenGL Shading Language) fragment shaders ke mathematical calculations se banta hai:
+  </p>
+
+  <h3>A. Fresnel Rim Glow Formula:</h3>
+  <p>
+    Fresnel effect se object ke kinaron (grazing angles) par light tez glow karti hai aur seedhe dekhne par semi-transparent rehti hai:
+  </p>
+  <pre><span class="kw">float</span> NdotV = <span class="fn">max</span>(<span class="fn">dot</span>(normal, viewDir), <span class="num">0.0</span>);
+<span class="kw">float</span> fresnel = <span class="fn">pow</span>(<span class="num">1.0</span> - NdotV, uFresnelPower) * uFresnelIntensity;</pre>
+
+  <h3>B. Animated Scanlines & Radar Sweep:</h3>
+  <p>
+    Ship ke vertical Y-axis par chalne wali moving holographic scanlines:
+  </p>
+  <pre><span class="cm">// Vertical fine scanlines</span>
+<span class="kw">float</span> scanline = <span class="fn">sin</span>(vWorldPosition.y * uScanlineFreq - uTime * uScanlineSpeed) * <span class="num">0.5</span> + <span class="num">0.5</span>;
+scanline = <span class="fn">pow</span>(scanline, <span class="num">2.0</span>) * <span class="num">0.3</span>;
+
+<span class="cm">// Broad upward sweeping radar pulse</span>
+<span class="kw">float</span> sweepWave = <span class="fn">sin</span>(vWorldPosition.y * <span class="num">0.25</span> - uTime * <span class="num">1.8</span>);
+<span class="kw">float</span> sweep = <span class="fn">smoothstep</span>(<span class="num">0.7</span>, <span class="num">1.0</span>, sweepWave) * <span class="num">0.4</span>;</pre>
+
+  <!-- ==================== CHAPTER 6 ==================== -->
+  <h2>6. Real-Time "HOLOGRAM BRIGHTNESS" Volume Slider (`js/main.js`)</h2>
+  <p>
+    User ke control ke liye ek dedicated cyberpunk volume slider add kiya gaya hai jo bina kisi lag ke <strong>Three.js Post-Processing Bloom</strong> aur <strong>Shader Uniforms</strong> ko real-time adjust karta hai:
+  </p>
+
+  <div class="callout callout-tech">
+    <div class="callout-title">🎛️ Mathematical Interpolation Logic (<code class="inline">setHologramBrightness</code>):</div>
+    <pre><span class="fn">setHologramBrightness</span>(normVal) { <span class="cm">// normVal = 0.0 to 1.0 (0% to 100%)</span>
+  <span class="cm">// 1. Scale Bloom Strength & Threshold (Kam glow par 3D details sharp rehti hain)</span>
+  <span class="kw">this</span>.bloomPass.strength = <span class="num">0.05</span> + Math.<span class="fn">pow</span>(normVal, <span class="num">1.3</span>) * <span class="num">2.15</span>;
+  <span class="kw">this</span>.bloomPass.threshold = <span class="num">0.42</span> - normVal * <span class="num">0.30</span>;
+
+  <span class="cm">// 2. Scale Ship Material Shaders</span>
+  <span class="kw">for</span> (<span class="kw">const</span> mat <span class="kw">of</span> <span class="kw">this</span>.shipBuilder.animatedMaterials) {
+    mat.uniforms.uFresnelIntensity.value = <span class="num">0.35</span> + normVal * <span class="num">2.5</span>;
+    mat.uniforms.uInnerGlow.value = <span class="num">0.05</span> + normVal * <span class="num">0.55</span>;
+    mat.uniforms.uOpacity.value = <span class="num">0.22</span> + normVal * <span class="num">0.45</span>;
+  }
+}</pre>
+  </div>
+
+  <!-- ==================== CHAPTER 7 ==================== -->
+  <h2>7. Holographic 3D Section Labels & Annotations (हर सेक्शन का नाम और 3D कॉलआउट्स)</h2>
+  <p>
+    Hologram ke har ek mahatvapurna hisse ko visually identify karne ke liye ek <strong>3D-to-2D Screen Tracking Annotation Engine</strong> banaya gaya hai. Isme 11 distinct sections shamil hain:
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Section Name</th>
+        <th>Ship Component & Role</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code class="inline">SEC-01</code></td><td><strong>RADAR ARRAYS</strong></td><td>Dual X/S-Band rotary antenna scanners mounted on main mast</td></tr>
+      <tr><td><code class="inline">SEC-02</code></td><td><strong>NAVIGATION BRIDGE</strong></td><td>5-tier accommodation deckhouse & extended panoramic bridge wings</td></tr>
+      <tr><td><code class="inline">SEC-03</code></td><td><strong>EXHAUST FUNNELS</strong></td><td>Twin raked main propulsion engine exhaust stacks</td></tr>
+      <tr><td><code class="inline">SEC-04</code></td><td><strong>LIFEBOAT STATIONS</strong></td><td>Port & starboard enclosed gravity davit escape pods</td></tr>
+      <tr><td><code class="inline">SEC-05</code></td><td><strong>MIDSHIP CARGO HOLD</strong></td><td>24,000 TEU high-density tiered container stacks</td></tr>
+      <tr><td><code class="inline">SEC-06</code></td><td><strong>FORWARD CARGO BAYS</strong></td><td>Cell guides & structural lashing bridge towers</td></tr>
+      <tr><td><code class="inline">SEC-07</code></td><td><strong>FORECASTLE DECK</strong></td><td>V-shaped wave breakwater & forward anchor windlasses</td></tr>
+      <tr><td><code class="inline">SEC-08</code></td><td><strong>BULBOUS BOW & PROW</strong></td><td>Hydrodynamic bulbous keel & sharp cutwater knife edge</td></tr>
+      <tr><td><code class="inline">SEC-09</code></td><td><strong>TRANSOM STERN & RUDDER</strong></td><td>Transom flat keel, rudder steering skeg & propeller housing</td></tr>
+      <tr><td><code class="inline">SEC-10</code></td><td><strong>HOLO-EMITTER BASE</strong></td><td>6 concentric counter-rotating laser rings & radial azimuth grid</td></tr>
+      <tr><td><code class="inline">SEC-11</code></td><td><strong>PROJECTION GRID CRADLE</strong></td><td>Hyperbolic upward wireframe beam funnel holding the vessel</td></tr>
+    </tbody>
+  </table>
+
+  <h3>How 3D-to-2D Coordinate Tracking Works (गणितीय तकनीक):</h3>
+  <pre><span class="cm">// 1. Transform local 3D anchor vector to world space (accounts for ship float/pitch/roll)</span>
+tempVec.<span class="fn">copy</span>(sec.pos);
+sec.group.<span class="fn">localToWorld</span>(tempVec);
+
+<span class="cm">// 2. Project 3D vector to Normalized Device Coordinates (NDC)</span>
+tempVec.<span class="fn">project</span>(<span class="kw">this</span>.camera);
+
+<span class="cm">// 3. Convert NDC (-1 to +1) to 2D Screen pixel coordinates</span>
+<span class="kw">const</span> sx = (tempVec.x * <span class="num">0.5</span> + <span class="num">0.5</span>) * window.innerWidth;
+<span class="kw">const</span> sy = (-tempVec.y * <span class="num">0.5</span> + <span class="num">0.5</span>) * window.innerHeight;
+
+<span class="cm">// 4. Render SVG laser leader line & reticle</span>
+item.line.<span class="fn">setAttribute</span>(<span class="str">'points'</span>, <span class="str">`\${sx},\${sy} \${elbowX},\${elbowY} \${connX},\${connY}`</span>);</pre>
+
+  <!-- ==================== CHAPTER 8 ==================== -->
+  <h2>8. Complete File Directory & Summary (फाइल एवं कोड सारांश)</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>File Path</th>
+        <th>Primary Responsibility</th>
+        <th>Key Classes / APIs Used</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code class="inline">index.html</code></td>
+        <td>HTML5 Entrypoint, UI HUD, Buttons, Slider</td>
+        <td>DOM Elements, WebGL Canvas container</td>
+      </tr>
+      <tr>
+        <td><code class="inline">css/style.css</code></td>
+        <td>Glassmorphism HUD, Cyber theme, Range Slider</td>
+        <td>CSS Variables, Backdrop-Filter, Animations</td>
+      </tr>
+      <tr>
+        <td><code class="inline">js/hologram-shaders.js</code></td>
+        <td>Custom GLSL Shaders & Material Factory</td>
+        <td><code class="inline">THREE.ShaderMaterial</code>, GLSL Fresnel Math</td>
+      </tr>
+      <tr>
+        <td><code class="inline">js/ship-builder.js</code></td>
+        <td>3D Container Ship Procedural Geometry</td>
+        <td><code class="inline">BufferGeometry</code>, <code class="inline">EdgesGeometry</code>, Group hierarchy</td>
+      </tr>
+      <tr>
+        <td><code class="inline">js/platform-builder.js</code></td>
+        <td>Rotating platform rings, funnel & particles</td>
+        <td><code class="inline">TorusGeometry</code>, <code class="inline">Points</code>, Particle physics</td>
+      </tr>
+      <tr>
+        <td><code class="inline">js/main.js</code></td>
+        <td>App Master Controller, Render Loop, Bloom</td>
+        <td><code class="inline">EffectComposer</code>, <code class="inline">OrbitControls</code>, Web Audio</td>
+      </tr>
+      <tr>
+        <td><code class="inline">lib/</code></td>
+        <td>Offline standalone Three.js & pass modules</td>
+        <td><code class="inline">three.min.js</code>, <code class="inline">UnrealBloomPass.js</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ==================== CHAPTER 9 ==================== -->
+  <h2>9. Quick Reference & Execution (कैसे चलाएं और सीखें)</h2>
+  <ol>
+    <li><strong>Browser mein Run karein:</strong> Desktop par jaakar <code class="inline">hologram 2.o\index.html</code> par double-click karein ya <code class="inline">http://localhost:8080</code> open karein.</li>
+    <li><strong>Mouse Controls:</strong> Left-click drag se 360° ghumayein, Right-click se pan karein, Scroll se zoom karein.</li>
+    <li><strong>Brightness Control:</strong> Bottom bar mein <strong>"HOLOGRAM BRIGHTNESS"</strong> slider ko kam ya zyada karke lighting adjust karein.</li>
+    <li><strong>Code Study:</strong> JavaScript files mein diye gaye comments ko padhein aur naye geometries ya colors test karein!</li>
+  </ol>
+
+</body>
+</html>

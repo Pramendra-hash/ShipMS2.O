@@ -26,7 +26,19 @@ export default function App() {
     setToastShow(true);
     setTimeout(() => {
       setToastShow(false);
-    }, 3200);
+    }, 3500);
+  };
+
+  // Enforce Bridge Authentication on Any Click if User is Not Logged In
+  const requireAuth = (callback) => {
+    if (!user) {
+      showToast('⚠️ Bridge Clearance Required: Please authenticate to access fleet operations!');
+      setAuthMode('login');
+      setAuthModalOpen(true);
+      return false;
+    }
+    if (callback) callback();
+    return true;
   };
 
   // Fleet Vessels Data
@@ -192,7 +204,7 @@ export default function App() {
 
   const handleAuthSuccess = (userData, message) => {
     setUser(userData);
-    showToast(message);
+    showToast(message || `Welcome aboard, ${userData.name}!`);
   };
 
   return (
@@ -206,7 +218,7 @@ export default function App() {
       {/* Floating Visual Editor (Universal Design Controller) */}
       <VisualEditor onToast={showToast} />
 
-      {/* Auth Modal */}
+      {/* Auth Modal using shipms-auth Portal */}
       <AuthModal
         isOpen={authModalOpen}
         mode={authMode}
@@ -215,7 +227,7 @@ export default function App() {
       />
 
       {/* =========================================================================
-          1. STICKY TOP NAVBAR (Single Horizontal Bar, No Screen Overlap)
+          1. STICKY TOP NAVBAR (Single Clean Horizontal Row, No Screen Overlap)
           ========================================================================= */}
       <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#020b18]/90 border-b border-[#174165] px-4 sm:px-6 py-2.5 transition-all">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
@@ -243,10 +255,10 @@ export default function App() {
           {/* Center Navigation Links (Clean Single Horizontal Row) */}
           <nav className="hidden lg:flex items-center gap-6 text-xs font-semibold text-[#8cbcdb]">
             <a href="#home" className="hover:text-[#00d2ff] transition-colors hover-glow-text">Home</a>
-            <a href="#fleet" className="hover:text-[#00d2ff] transition-colors hover-glow-text">Fleet</a>
-            <a href="#captains" className="hover:text-[#00d2ff] transition-colors hover-glow-text">Captains</a>
-            <a href="#routes" className="hover:text-[#00d2ff] transition-colors hover-glow-text">Routes</a>
-            <a href="#hologram-section" className="hover:text-[#00d2ff] transition-colors hover-glow-text flex items-center gap-1">
+            <a href="#fleet" onClick={(e) => { if (!requireAuth()) e.preventDefault(); }} className="hover:text-[#00d2ff] transition-colors hover-glow-text">Fleet</a>
+            <a href="#captains" onClick={(e) => { if (!requireAuth()) e.preventDefault(); }} className="hover:text-[#00d2ff] transition-colors hover-glow-text">Captains</a>
+            <a href="#routes" onClick={(e) => { if (!requireAuth()) e.preventDefault(); }} className="hover:text-[#00d2ff] transition-colors hover-glow-text">Routes</a>
+            <a href="#hologram-section" onClick={(e) => { if (!requireAuth()) e.preventDefault(); }} className="hover:text-[#00d2ff] transition-colors hover-glow-text flex items-center gap-1">
               <span className="text-xs">🌐</span> 3D Hologram
             </a>
             <a href="#about" className="hover:text-[#00d2ff] transition-colors hover-glow-text">About Us</a>
@@ -256,19 +268,27 @@ export default function App() {
           {/* Right Controls: Search, Live Status, Login / Register */}
           <div className="flex items-center gap-3 shrink-0">
             {/* Search Input Bar */}
-            <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#071323] border border-[#174165] text-xs focus-within:border-[#00d2ff] transition-all hover-glow-bar">
+            <div
+              onClick={() => requireAuth()}
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#071323] border border-[#174165] text-xs focus-within:border-[#00d2ff] transition-all hover-glow-bar cursor-pointer"
+            >
               <input
                 type="text"
                 placeholder="Search ships, IMO, routes..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  requireAuth(() => setSearchQuery(e.target.value));
+                }}
                 className="bg-transparent text-[#e6f6ff] text-xs outline-none w-36 lg:w-44 placeholder-[#4d7a9c]"
               />
               <span className="text-xs text-[#8cbcdb]">🔍</span>
             </div>
 
             {/* Live Operational Metric Pill */}
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-xl bg-[#041d33] border border-[#00d2ff]/40 text-xs font-mono">
+            <div
+              onClick={() => requireAuth()}
+              className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-xl bg-[#041d33] border border-[#00d2ff]/40 text-xs font-mono cursor-pointer hover-glow-btn"
+            >
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
               <span className="text-[#00d2ff] font-bold">21 / 28 AT SEA</span>
             </div>
@@ -324,7 +344,10 @@ export default function App() {
         <section id="metrics-strip" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           
           {/* Card 1: Total Fleet */}
-          <div className="p-3.5 rounded-2xl bg-[#071323]/80 border border-[#174165] hover-glow-card transition-all">
+          <div
+            onClick={() => requireAuth(() => showToast('Total Active Fleet: 28 Vessels Navigating Global Corridors'))}
+            className="p-3.5 rounded-2xl bg-[#071323]/80 border border-[#174165] hover-glow-card transition-all cursor-pointer"
+          >
             <div className="flex items-center justify-between text-xs text-[#8cbcdb] mb-1.5 font-medium">
               <span>Total Fleet</span>
               <span className="text-sm">🚢</span>
@@ -338,7 +361,10 @@ export default function App() {
           </div>
 
           {/* Card 2: Active At Sea */}
-          <div className="p-3.5 rounded-2xl bg-[#071323]/80 border border-[#174165] hover-glow-card transition-all">
+          <div
+            onClick={() => requireAuth(() => showToast('21 Vessels Currently Underway at Sea'))}
+            className="p-3.5 rounded-2xl bg-[#071323]/80 border border-[#174165] hover-glow-card transition-all cursor-pointer"
+          >
             <div className="flex items-center justify-between text-xs text-[#8cbcdb] mb-1.5 font-medium">
               <span>Active At Sea</span>
               <span className="text-sm">🌊</span>
@@ -352,7 +378,10 @@ export default function App() {
           </div>
 
           {/* Card 3: In Port / Loading */}
-          <div className="p-3.5 rounded-2xl bg-[#071323]/80 border border-[#174165] hover-glow-card transition-all">
+          <div
+            onClick={() => requireAuth(() => showToast('4 Vessels Moored in Port for Cargo Operations'))}
+            className="p-3.5 rounded-2xl bg-[#071323]/80 border border-[#174165] hover-glow-card transition-all cursor-pointer"
+          >
             <div className="flex items-center justify-between text-xs text-[#8cbcdb] mb-1.5 font-medium">
               <span>In Port / Loading</span>
               <span className="text-sm text-[#00d2ff]">⚓</span>
@@ -368,8 +397,10 @@ export default function App() {
           {/* Card 4: Inactive / Maint. (Highlighted Red, Royal Voyager link) */}
           <div
             onClick={() => {
-              setSelectedShipId('ship-4');
-              showToast('Selected Inactive Vessel: Royal Voyager (STOPPED at port)');
+              requireAuth(() => {
+                setSelectedShipId('ship-4');
+                showToast('Selected Inactive Vessel: Royal Voyager (STOPPED at port)');
+              });
             }}
             className="p-3.5 rounded-2xl bg-[#140810]/90 border border-rose-500/40 hover-glow-card transition-all cursor-pointer group"
           >
@@ -386,7 +417,10 @@ export default function App() {
           </div>
 
           {/* Card 5: Nautical Miles */}
-          <div className="p-3.5 rounded-2xl bg-[#071323]/80 border border-[#174165] hover-glow-card transition-all">
+          <div
+            onClick={() => requireAuth(() => showToast('Total Annual Traversed: 1.42M Nautical Miles'))}
+            className="p-3.5 rounded-2xl bg-[#071323]/80 border border-[#174165] hover-glow-card transition-all cursor-pointer"
+          >
             <div className="flex items-center justify-between text-xs text-[#8cbcdb] mb-1.5 font-medium">
               <span>Nautical Miles</span>
               <span className="text-sm text-[#00d2ff]">🧭</span>
@@ -400,7 +434,10 @@ export default function App() {
           </div>
 
           {/* Card 6: Safety Index */}
-          <div className="p-3.5 rounded-2xl bg-[#071323]/80 border border-[#174165] hover-glow-card transition-all">
+          <div
+            onClick={() => requireAuth(() => showToast('Safety Rating: 99.6% Zero Maritime Incidents'))}
+            className="p-3.5 rounded-2xl bg-[#071323]/80 border border-[#174165] hover-glow-card transition-all cursor-pointer"
+          >
             <div className="flex items-center justify-between text-xs text-[#8cbcdb] mb-1.5 font-medium">
               <span>Safety Index</span>
               <span className="text-sm text-amber-400">🛡</span>
@@ -454,19 +491,26 @@ export default function App() {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center gap-3 pt-3">
-                <a
-                  href="#tracking"
+                <button
+                  onClick={() => requireAuth(() => {
+                    const el = document.getElementById('tracking');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    showToast(`Tracking live coordinates of ${selectedShip.name}`);
+                  })}
                   className="px-5 py-2.5 rounded-xl font-['Outfit'] font-bold text-xs bg-gradient-to-r from-[#00d2ff] to-[#169bff] text-[#020b18] shadow-[0_0_20px_rgba(0,210,255,0.4)] hover-glow-btn transition-all"
                 >
                   Track {selectedShip.name} ➔
-                </a>
-                <a
-                  href="#hologram-section"
+                </button>
+                <button
+                  onClick={() => requireAuth(() => {
+                    const el = document.getElementById('hologram-section');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  })}
                   className="px-5 py-2.5 rounded-xl font-['Outfit'] font-bold text-xs bg-[#07172b] hover:bg-[#0e2746] border border-[#174165] text-[#00d2ff] hover-glow-btn transition-all flex items-center gap-1.5"
                 >
                   <span>🌐</span>
                   <span>Open 3D Hologram</span>
-                </a>
+                </button>
                 <button
                   onClick={() => { setAuthMode('register'); setAuthModalOpen(true); }}
                   className="px-5 py-2.5 rounded-xl font-['Outfit'] font-bold text-xs bg-[#091b30] hover:bg-[#102d4f] border border-[#174165] text-[#8cbcdb] hover:text-white transition-all hover-glow-btn"
@@ -478,7 +522,10 @@ export default function App() {
 
             {/* Right Hero Visual (Container Ship with Live HUD) */}
             <div className="lg:col-span-5 relative">
-              <div className="relative rounded-2xl overflow-hidden border border-[#174165] shadow-2xl group">
+              <div
+                onClick={() => requireAuth()}
+                className="relative rounded-2xl overflow-hidden border border-[#174165] shadow-2xl group cursor-pointer"
+              >
                 <img
                   src={selectedShip.image || '/oceanic-explorer.jpg'}
                   alt={selectedShip.name}
@@ -515,12 +562,13 @@ export default function App() {
         </section>
 
         {/* =========================================================================
-            4. 3D HOLOGRAM VESSEL SIMULATION
+            4. 3D HOLOGRAM VESSEL SIMULATION (Using hologram 2.o index.html)
             ========================================================================= */}
         <section id="hologram">
           <HologramViewer
             selectedShip={selectedShip}
             isInactive={selectedShip.isInactive}
+            onActionRequireAuth={requireAuth}
           />
         </section>
 
@@ -556,11 +604,13 @@ export default function App() {
                 <button
                   key={ship.id}
                   onClick={() => {
-                    setSelectedShipId(ship.id);
-                    showToast(ship.isInactive 
-                      ? `Selected ${ship.name}: VESSEL STOPPED at Mumbai Anchorage`
-                      : `Tracking ${ship.name}: Underway at ${ship.speed}`
-                    );
+                    requireAuth(() => {
+                      setSelectedShipId(ship.id);
+                      showToast(ship.isInactive 
+                        ? `Selected ${ship.name}: VESSEL STOPPED at Mumbai Anchorage`
+                        : `Tracking ${ship.name}: Underway at ${ship.speed}`
+                      );
+                    });
                   }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                     selectedShipId === ship.id
@@ -585,7 +635,10 @@ export default function App() {
           )}
 
           {/* SVG Interactive Marine Corridor Map */}
-          <div className="mt-4 relative rounded-2xl overflow-hidden border border-[#174165] bg-[#020712] h-72 sm:h-80 select-none">
+          <div
+            onClick={() => requireAuth()}
+            className="mt-4 relative rounded-2xl overflow-hidden border border-[#174165] bg-[#020712] h-72 sm:h-80 select-none cursor-pointer"
+          >
             
             {/* Background Grid Pattern */}
             <div className="absolute inset-0 opacity-15" style={{
@@ -614,10 +667,8 @@ export default function App() {
                 </filter>
               </defs>
 
-              {/* Coastline approximations */}
-              {/* West (Arabian Peninsula) */}
+              {/* Coastlines */}
               <path d="M 40 40 Q 140 120 180 200 T 260 320" fill="none" stroke="#174165" strokeWidth="2" strokeDasharray="4 4" />
-              {/* East (Indian Subcontinent) */}
               <path d="M 840 40 Q 760 140 730 220 T 700 340" fill="none" stroke="#174165" strokeWidth="2" strokeDasharray="4 4" />
 
               {/* Waypoint Port 1: Mumbai (Start Point) */}
@@ -647,7 +698,6 @@ export default function App() {
               </text>
 
               {/* Active Shipping Corridor Path */}
-              {/* Route from Mumbai (750, 220) to Muscat (340, 160) to Dubai (160, 110) */}
               <path
                 id="shippingRoute"
                 d="M 750 220 Q 520 230 340 160 Q 240 125 160 110"
@@ -660,21 +710,15 @@ export default function App() {
 
               {/* Moving / Stopped Vessel on the Corridor */}
               {(() => {
-                // Compute current position along bezier curve
-                // Start: (750, 220) -> End: (160, 110)
                 const t = corridorProgress;
-                // Cubic/Quadratic interpolation
-                // Mumbai (750, 220) to Dubai (160, 110) with curve control at (450, 240)
                 const p0 = { x: 750, y: 220 };
                 const p1 = { x: 450, y: 240 };
                 const p2 = { x: 160, y: 110 };
 
-                // Quad Bezier: (1-t)^2 * p0 + 2(1-t)t * p1 + t^2 * p2
                 const cx = (1 - t) * (1 - t) * p0.x + 2 * (1 - t) * t * p1.x + t * t * p2.x;
                 const cy = (1 - t) * (1 - t) * p0.y + 2 * (1 - t) * t * p1.y + t * t * p2.y;
 
                 if (selectedShip.isInactive) {
-                  // STOPPED AT STARTING POINT / ANCHORAGE
                   return (
                     <g transform="translate(750, 220)">
                       <circle cx="0" cy="0" r="14" fill="#f43f5e" opacity="0.3" className="animate-ping" />
@@ -691,13 +735,9 @@ export default function App() {
 
                 return (
                   <g transform={`translate(${cx}, ${cy})`}>
-                    {/* Pulsing Radar Wave */}
                     <circle cx="0" cy="0" r="16" fill="none" stroke="#00d2ff" strokeWidth="1.5" opacity="0.5" className="animate-ping" />
-                    {/* Vessel Body Marker */}
                     <circle cx="0" cy="0" r="7" fill="#00d2ff" filter="url(#laserGlow)" />
-                    {/* Heading Indicator Arrow */}
                     <polygon points="0,-10 -5,6 5,6" fill="#ffffff" transform="rotate(-65)" />
-                    {/* Vessel Label Pill */}
                     <rect x="-65" y="-36" width="130" height="20" rx="6" fill="#020b18" stroke="#00d2ff" strokeWidth="1" opacity="0.9" />
                     <text x="0" y="-22" fill="#e6f6ff" fontSize="10" fontWeight="bold" textAnchor="middle" fontFamily="Outfit">
                       🚢 {selectedShip.name} ({selectedShip.speed})
@@ -742,11 +782,13 @@ export default function App() {
               <div
                 key={ship.id}
                 onClick={() => {
-                  setSelectedShipId(ship.id);
-                  showToast(ship.isInactive 
-                    ? `Selected Royal Voyager (INACTIVE): Motion stopped at port`
-                    : `Selected ${ship.name}: Underway on ${ship.route}`
-                  );
+                  requireAuth(() => {
+                    setSelectedShipId(ship.id);
+                    showToast(ship.isInactive 
+                      ? `Selected Royal Voyager (INACTIVE): Motion stopped at port`
+                      : `Selected ${ship.name}: Underway on ${ship.route}`
+                    );
+                  });
                 }}
                 className={`p-4 rounded-2xl border transition-all cursor-pointer hover-glow-card relative flex flex-col justify-between ${
                   selectedShipId === ship.id
@@ -825,7 +867,11 @@ export default function App() {
 
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {captains.map((c, i) => (
-              <div key={i} className="p-4 rounded-2xl bg-[#040e1d] border border-[#174165] hover-glow-card transition-all">
+              <div
+                key={i}
+                onClick={() => requireAuth(() => showToast(`Opening command record of ${c.name}`))}
+                className="p-4 rounded-2xl bg-[#040e1d] border border-[#174165] hover-glow-card transition-all cursor-pointer"
+              >
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#00d2ff]/20 to-[#169bff]/30 border border-[#00d2ff]/40 flex items-center justify-center text-2xl mb-3">
                   👨‍✈️
                 </div>
@@ -877,7 +923,11 @@ export default function App() {
               </thead>
               <tbody className="divide-y divide-[#174165]/50">
                 {upcomingVoyages.map((v, i) => (
-                  <tr key={i} className="hover:bg-[#0c2444]/40 transition-colors">
+                  <tr
+                    key={i}
+                    onClick={() => requireAuth(() => showToast(`Voyage ${v.id} details: ${v.cargo}`))}
+                    className="hover:bg-[#0c2444]/40 transition-colors cursor-pointer"
+                  >
                     <td className="py-3 px-3 text-[#00d2ff] font-bold">{v.id}</td>
                     <td className="py-3 px-3 text-[#e6f6ff] font-['Outfit'] font-bold">{v.vessel}</td>
                     <td className="py-3 px-3 text-[#8cbcdb]">{v.origin}</td>
