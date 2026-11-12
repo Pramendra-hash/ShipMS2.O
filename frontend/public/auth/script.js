@@ -164,6 +164,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Direct Switch Links inside forms
+  const switchLinkToSignIn = document.getElementById('switchLinkToSignIn');
+  if (switchLinkToSignIn) {
+    switchLinkToSignIn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (signInBtn) signInBtn.click();
+      if (tabSignIn) tabSignIn.click();
+      if (authContainer) authContainer.classList.remove('right-panel-active');
+    });
+  }
+
+  const switchLinkToSignUp = document.getElementById('switchLinkToSignUp');
+  if (switchLinkToSignUp) {
+    switchLinkToSignUp.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (signUpBtn) signUpBtn.click();
+      if (tabSignUp) tabSignUp.click();
+      if (authContainer) authContainer.classList.add('right-panel-active');
+    });
+  }
+
+  // Parent React Window postMessage listener (OPEN_LOGIN / OPEN_REGISTER)
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.action) {
+      if (e.data.action === 'OPEN_LOGIN') {
+        if (authContainer) authContainer.classList.remove('right-panel-active');
+        if (tabSignIn) tabSignIn.click();
+      } else if (e.data.action === 'OPEN_REGISTER') {
+        if (authContainer) authContainer.classList.add('right-panel-active');
+        if (tabSignUp) tabSignUp.click();
+      }
+    }
+  });
+
   // ---------------------------------------------------------
   // PASSWORD VISIBILITY TOGGLE
   // ---------------------------------------------------------

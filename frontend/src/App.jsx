@@ -346,7 +346,7 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => { setAuthMode('login'); setAuthModalOpen(true); }}
-                  className="px-3.5 py-1.5 rounded-xl bg-[#07172b] hover:bg-[#0c2444] border border-[#174165] text-xs font-bold text-[#8cbcdb] hover:text-[#00d2ff] transition-all hover-glow-btn flex items-center gap-1.5"
+                  className="px-3.5 py-1.5 rounded-xl bg-[#0c2b48] hover:bg-[#133e68] border border-[#00d2ff]/60 text-xs font-bold text-[#00d2ff] hover:text-white transition-all hover-glow-btn flex items-center gap-1.5 shadow-[0_0_12px_rgba(0,210,255,0.25)] cursor-pointer"
                 >
                   <span>🔐</span>
                   <span>Login</span>
@@ -545,11 +545,22 @@ export default function App() {
                   <span className="text-[10px]">{showHologram ? '▲' : '▼'}</span>
                 </button>
 
+                {/* Direct Officer Login Button */}
+                <button
+                  onClick={() => { setAuthMode('login'); setAuthModalOpen(true); }}
+                  className="px-5 py-2.5 rounded-xl font-['Outfit'] font-bold text-xs bg-[#0c2b48] hover:bg-[#133e68] border border-[#00d2ff]/60 text-[#00d2ff] hover:text-white transition-all hover-glow-btn flex items-center gap-2 shadow-[0_0_15px_rgba(0,210,255,0.25)]"
+                >
+                  <span>🔐</span>
+                  <span>Officer Login</span>
+                </button>
+
+                {/* Register Officer Button */}
                 <button
                   onClick={() => { setAuthMode('register'); setAuthModalOpen(true); }}
-                  className="px-5 py-2.5 rounded-xl font-['Outfit'] font-bold text-xs bg-[#091b30] hover:bg-[#102d4f] border border-[#174165] text-[#8cbcdb] hover:text-white transition-all hover-glow-btn"
+                  className="px-5 py-2.5 rounded-xl font-['Outfit'] font-bold text-xs bg-[#091b30] hover:bg-[#102d4f] border border-[#174165] text-[#8cbcdb] hover:text-white transition-all hover-glow-btn flex items-center gap-1.5"
                 >
-                  ✦ Register Officer
+                  <span>✦</span>
+                  <span>Register Officer</span>
                 </button>
               </div>
             </div>
