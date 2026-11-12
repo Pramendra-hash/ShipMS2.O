@@ -6,7 +6,7 @@ export const connectDB = async () => {
   const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/shipms';
   try {
     const conn = await mongoose.connect(mongoURI, {
-      serverSelectionTimeoutMS: 3000,
+      serverSelectionTimeoutMS: 10000,
     });
     isMongoConnected = true;
     console.log(`🍃 MongoDB Connected: ${conn.connection.host}/${conn.connection.name}`);
