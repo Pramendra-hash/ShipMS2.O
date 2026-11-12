@@ -115,8 +115,17 @@
 
           <div class="input-group">
             <i class="fa-solid fa-key input-icon"></i>
-            <input type="password" id="regPassword" placeholder="Clearance Passcode" required autocomplete="new-password" />
+            <input type="password" id="regPassword" placeholder="Clearance Passcode (min 6 chars)" required autocomplete="new-password" />
             <button type="button" class="eye-toggle" data-target="regPassword" aria-label="Toggle password view">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+            <span class="focus-border"></span>
+          </div>
+
+          <div class="input-group">
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input type="password" id="regPasswordConfirm" placeholder="Confirm Clearance Passcode" required autocomplete="new-password" />
+            <button type="button" class="eye-toggle" data-target="regPasswordConfirm" aria-label="Toggle password view">
               <i class="fa-regular fa-eye"></i>
             </button>
             <span class="focus-border"></span>
@@ -185,7 +194,7 @@
 
           <div class="input-group">
             <i class="fa-regular fa-envelope input-icon"></i>
-            <input type="email" id="loginEmail" placeholder="Fleet ID / Officer Email" required autocomplete="username" />
+            <input type="text" id="loginEmail" placeholder="Officer Name or Fleet Email / ID" required autocomplete="username" />
             <span class="focus-border"></span>
           </div>
 

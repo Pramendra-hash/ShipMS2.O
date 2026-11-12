@@ -169,6 +169,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (switchLinkToSignIn) {
     switchLinkToSignIn.addEventListener('click', (e) => {
       e.preventDefault();
+      // Auto-fill login field with email or name from register form
+      const regEmailVal = document.getElementById('regEmail')?.value?.trim();
+      const regNameVal = document.getElementById('regName')?.value?.trim();
+      if (regEmailVal) {
+        loginEmail.value = regEmailVal;
+      } else if (regNameVal) {
+        loginEmail.value = regNameVal;
+      }
       if (signInBtn) signInBtn.click();
       if (tabSignIn) tabSignIn.click();
       if (authContainer) authContainer.classList.remove('right-panel-active');
@@ -293,15 +301,49 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ---------------------------------------------------------
-  // FORGOT PASSWORD MODAL / PROMPT
+  // FORGOT PASSWORD MODAL / PROMPT (REAL BACKEND PASSCODE RESET)
   // ---------------------------------------------------------
   const forgotLink = document.getElementById('forgotLink');
   if (forgotLink) {
-    forgotLink.addEventListener('click', (e) => {
+    forgotLink.addEventListener('click', async (e) => {
       e.preventDefault();
       playUiTone('click');
-      const email = loginEmail.value.trim() || 'officer@shipms.io';
-      showToast('Clearance Reset Dispatched', `Recovery link sent to ${email} via secure AIS frequency.`);
+      const currentInput = (loginEmail.value || '').trim();
+      const officerIdentifier = prompt('Enter your registered Officer ID, Name, or Email to reset passcode:', currentInput);
+      if (!officerIdentifier) return;
+
+      const newPass = prompt(`Enter new Bridge Passcode for "${officerIdentifier}" (min 6 characters):`);
+      if (!newPass) return;
+      if (newPass.length < 6) {
+        playUiTone('error');
+        showToast('Password Too Short ❌', 'Passcode must be at least 6 characters long.', true);
+        return;
+      }
+
+      showToast('Resetting Passcode...', 'Updating credentials with ShipMS MongoDB Database...');
+
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: officerIdentifier.trim(), newPassword: newPass.trim() })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          playUiTone('success');
+          showToast('Passcode Updated ✅', data.message || 'Passcode updated successfully! You can now log in.');
+          loginEmail.value = officerIdentifier.trim();
+          loginPassword.value = newPass.trim();
+          loginPassword.focus();
+        } else {
+          playUiTone('error');
+          showToast('Reset Failed ❌', data.message || 'Officer account not found.', true);
+        }
+      } catch (err) {
+        playUiTone('error');
+        showToast('Server Offline ❌', 'Cannot connect to ShipMS Backend server on port 5000.', true);
+      }
     });
   }
 
@@ -444,6 +486,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      const passConfirmInput = document.getElementById('regPasswordConfirm');
+      if (passConfirmInput && passConfirmInput.value.trim() !== pass) {
+        playUiTone('error');
+        showToast('Passcode Mismatch ❌', 'Passcode and Confirm Passcode do not match!', true);
+        return;
+      }
+
       if (!terms) {
         playUiTone('error');
         showToast('IMO Compliance Required', 'You must agree to maritime SOLAS telemetry terms', true);
@@ -480,6 +529,9 @@ document.addEventListener('DOMContentLoaded', () => {
           () => {
             if (data.token) localStorage.setItem('shipms_token', data.token);
             localStorage.setItem('shipms_user', JSON.stringify(data.user));
+
+            if (loginEmail) loginEmail.value = email;
+            if (loginPassword) loginPassword.value = pass;
 
             showToast(
               'Commission Complete ⚓',
