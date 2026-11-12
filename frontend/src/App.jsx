@@ -17,6 +17,9 @@ export default function App() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
 
+  // Toggle Hologram Open / Close State (User requested: click karne par show ho phir click karne par band)
+  const [showHologram, setShowHologram] = useState(false);
+
   // Toast Notification State
   const [toastMsg, setToastMsg] = useState('');
   const [toastShow, setToastShow] = useState(false);
@@ -39,6 +42,25 @@ export default function App() {
     }
     if (callback) callback();
     return true;
+  };
+
+  // Toggle Hologram with Auth & Smooth Scroll
+  const toggleHologram = () => {
+    requireAuth(() => {
+      setShowHologram(prev => {
+        const nextState = !prev;
+        if (nextState) {
+          setTimeout(() => {
+            const el = document.getElementById('hologram-toggle-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+          showToast('🌐 3D Hologram 2.o Matrix Initialized');
+        } else {
+          showToast('Hologram Matrix Collapsed');
+        }
+        return nextState;
+      });
+    });
   };
 
   // Fleet Vessels Data
@@ -258,9 +280,18 @@ export default function App() {
             <a href="#fleet" onClick={(e) => { if (!requireAuth()) e.preventDefault(); }} className="hover:text-[#00d2ff] transition-colors hover-glow-text">Fleet</a>
             <a href="#captains" onClick={(e) => { if (!requireAuth()) e.preventDefault(); }} className="hover:text-[#00d2ff] transition-colors hover-glow-text">Captains</a>
             <a href="#routes" onClick={(e) => { if (!requireAuth()) e.preventDefault(); }} className="hover:text-[#00d2ff] transition-colors hover-glow-text">Routes</a>
-            <a href="#hologram-section" onClick={(e) => { if (!requireAuth()) e.preventDefault(); }} className="hover:text-[#00d2ff] transition-colors hover-glow-text flex items-center gap-1">
-              <span className="text-xs">🌐</span> 3D Hologram
-            </a>
+            
+            {/* 3D Hologram Toggle Link */}
+            <button
+              onClick={toggleHologram}
+              className={`transition-colors hover-glow-text flex items-center gap-1 cursor-pointer ${
+                showHologram ? 'text-[#00d2ff] font-bold' : 'hover:text-[#00d2ff]'
+              }`}
+            >
+              <span className="text-xs">🌐</span>
+              <span>3D Hologram {showHologram ? '(Close)' : ''}</span>
+            </button>
+
             <a href="#about" className="hover:text-[#00d2ff] transition-colors hover-glow-text">About Us</a>
             <a href="#contact" className="hover:text-[#00d2ff] transition-colors hover-glow-text">Contact</a>
           </nav>
@@ -501,16 +532,21 @@ export default function App() {
                 >
                   Track {selectedShip.name} ➔
                 </button>
+
+                {/* 3D Hologram Button Toggle (Click to Show / Click to Hide) */}
                 <button
-                  onClick={() => requireAuth(() => {
-                    const el = document.getElementById('hologram-section');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  })}
-                  className="px-5 py-2.5 rounded-xl font-['Outfit'] font-bold text-xs bg-[#07172b] hover:bg-[#0e2746] border border-[#174165] text-[#00d2ff] hover-glow-btn transition-all flex items-center gap-1.5"
+                  onClick={toggleHologram}
+                  className={`px-5 py-2.5 rounded-xl font-['Outfit'] font-bold text-xs border transition-all hover-glow-btn flex items-center gap-2 ${
+                    showHologram
+                      ? 'bg-rose-950/80 border-rose-500/50 text-rose-300 shadow-[0_0_20px_rgba(244,63,94,0.3)]'
+                      : 'bg-[#07172b] hover:bg-[#0e2746] border-[#174165] text-[#00d2ff]'
+                  }`}
                 >
                   <span>🌐</span>
-                  <span>Open 3D Hologram</span>
+                  <span>{showHologram ? '✕ Close 3D Hologram' : 'Open 3D Hologram 2.o'}</span>
+                  <span className="text-[10px]">{showHologram ? '▲' : '▼'}</span>
                 </button>
+
                 <button
                   onClick={() => { setAuthMode('register'); setAuthModalOpen(true); }}
                   className="px-5 py-2.5 rounded-xl font-['Outfit'] font-bold text-xs bg-[#091b30] hover:bg-[#102d4f] border border-[#174165] text-[#8cbcdb] hover:text-white transition-all hover-glow-btn"
@@ -562,14 +598,56 @@ export default function App() {
         </section>
 
         {/* =========================================================================
-            4. 3D HOLOGRAM VESSEL SIMULATION (Using hologram 2.o index.html)
+            4. 3D HOLOGRAM TOGGLE SECTION (User requested: click to show, click again to close)
             ========================================================================= */}
-        <section id="hologram">
-          <HologramViewer
-            selectedShip={selectedShip}
-            isInactive={selectedShip.isInactive}
-            onActionRequireAuth={requireAuth}
-          />
+        <section id="hologram-toggle-section" className="rounded-3xl bg-[#071323]/80 border border-[#174165] p-5 sm:p-6 hover-glow-card transition-all">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#00d2ff] via-[#169bff] to-[#a855f7] flex items-center justify-center text-2xl text-[#020b18] font-bold shadow-[0_0_25px_rgba(0,210,255,0.4)]">
+                🌐
+              </div>
+              <div>
+                <h3 className="font-['Outfit'] font-black text-xl text-[#e6f6ff] tracking-tight flex items-center gap-2">
+                  <span>3D Holographic Container Vessel Matrix (2.o)</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                    selectedShip.isInactive
+                      ? 'bg-rose-950 text-rose-300 border border-rose-500/50'
+                      : (showHologram ? 'bg-[#00d2ff]/20 text-[#00d2ff] border border-[#00d2ff]/40' : 'bg-slate-800 text-slate-400 border border-slate-700')
+                  }`}>
+                    {showHologram ? '● ACTIVE MATRIX' : 'STANDBY (CLICK TO LAUNCH)'}
+                  </span>
+                </h3>
+                <p className="text-xs text-[#8cbcdb]">
+                  Three.js 3D Wireframe • Coherent Laser Scan • Click button below to {showHologram ? 'collapse' : 'launch'} hologram
+                </p>
+              </div>
+            </div>
+
+            {/* Toggle Button */}
+            <button
+              onClick={toggleHologram}
+              className={`px-5 py-2.5 rounded-xl font-['Outfit'] font-bold text-xs transition-all hover-glow-btn flex items-center gap-2 cursor-pointer ${
+                showHologram
+                  ? 'bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-500/50 shadow-[0_0_20px_rgba(244,63,94,0.3)]'
+                  : 'bg-gradient-to-r from-[#00d2ff] to-[#169bff] text-[#020b18] shadow-[0_0_25px_rgba(0,210,255,0.5)]'
+              }`}
+            >
+              <span>{showHologram ? '✕ Close Hologram' : '⚡ Launch 3D Hologram 2.o'}</span>
+              <span className="text-sm">{showHologram ? '▲' : '▼'}</span>
+            </button>
+          </div>
+
+          {/* Expandable Hologram Container (Only visible when showHologram is true) */}
+          {showHologram && (
+            <div className="mt-5 pt-5 border-t border-[#174165] animate-in fade-in zoom-in-95 duration-300">
+              <HologramViewer
+                selectedShip={selectedShip}
+                isInactive={selectedShip.isInactive}
+                onActionRequireAuth={requireAuth}
+                onClose={() => setShowHologram(false)}
+              />
+            </div>
+          )}
         </section>
 
         {/* =========================================================================
