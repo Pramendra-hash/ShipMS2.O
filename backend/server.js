@@ -2,13 +2,16 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB, getMongoStatus } from './config/db.js';
+import { seedDemoUsersIfEmpty } from './controllers/authController.js';
 import authRoutes from './routes/auth.js';
 import fleetRoutes from './routes/fleet.js';
 
 dotenv.config();
 
-// Initialize MongoDB / Mongoose connection
-connectDB();
+// Initialize MongoDB / Mongoose connection & seed demo officers
+connectDB().then(() => {
+  seedDemoUsersIfEmpty();
+});
 
 const app = express();
 const PORT = process.env.PORT || 5000;

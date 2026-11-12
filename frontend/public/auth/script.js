@@ -99,6 +99,14 @@ document.addEventListener('DOMContentLoaded', () => {
         gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
         osc.start(now);
         osc.stop(now + 1.2);
+      } else if (type === 'error') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.setValueAtTime(110, now + 0.12);
+        gain.gain.setValueAtTime(0.09, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
       }
     } catch (e) {
       // Audio autoplay policy fallback
@@ -297,6 +305,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Sign In Submission (Integrated with Backend REST API & Parent React Window)
+  const btnLogin = document.getElementById('btnLogin');
+  const btnRegister = document.getElementById('btnRegister');
+
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -304,104 +315,163 @@ document.addEventListener('DOMContentLoaded', () => {
       const pass = loginPassword.value.trim();
 
       if (!email || !pass) {
-        showToast('Access Denied', 'Please supply valid Fleet ID & Passcode', true);
+        playUiTone('error');
+        showToast('Access Denied ❌', 'Please supply valid Fleet ID & Passcode', true);
         return;
       }
 
-      triggerAisHandshake(
-        'Authorizing Bridge Access...',
-        'Connecting with ShipMS MERN MongoDB Server & AIS Link',
-        async () => {
-          let user = {
-            name: email.split('@')[0].replace('.', ' ').toUpperCase(),
-            email: email,
-            role: 'Fleet Officer'
-          };
+      // Visual loading on login button
+      if (btnLogin) {
+        btnLogin.disabled = true;
+        btnLogin.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> <span class="btn-text">Verifying Passcode...</span>';
+      }
 
-          try {
-            const res = await fetch('http://localhost:5000/api/auth/login', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email, password: pass })
-            });
-            const data = await res.json();
-            if (data.success && data.user) {
-              user = data.user;
-              if (data.token) localStorage.setItem('shipms_token', data.token);
-            }
-          } catch (err) {
-            console.warn('Backend server offline, using local bridge authorization');
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password: pass })
+        });
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          // STRICT ACCESS REJECTION: Invalid credentials!
+          playUiTone('error');
+          showToast('Access Denied ❌', data.message || 'Incorrect passcode! Access Denied.', true);
+          loginPassword.value = '';
+          loginPassword.focus();
+          if (btnLogin) {
+            btnLogin.disabled = false;
+            btnLogin.innerHTML = '<span class="btn-text">Authorize Bridge Access</span><i class="fa-solid fa-arrow-right-to-bracket"></i>';
           }
-
-          localStorage.setItem('shipms_user', JSON.stringify(user));
-          showToast(
-            'Bridge Clearance Granted ⚓',
-            `Welcome aboard ${user.name}. Loading fleet command dashboard...`
-          );
-
-          setTimeout(() => {
-            if (window.parent) {
-              window.parent.postMessage({ type: 'SHIPMS_AUTH_SUCCESS', user }, '*');
-            }
-          }, 800);
+          return;
         }
-      );
+
+        // Access Granted! Run AIS Handshake animation
+        if (btnLogin) {
+          btnLogin.innerHTML = '<span class="btn-text">Access Authorized</span><i class="fa-solid fa-check"></i>';
+        }
+
+        triggerAisHandshake(
+          'Authorizing Bridge Access...',
+          `Connecting with ShipMS MERN MongoDB Server for ${data.user.name}`,
+          () => {
+            if (data.token) localStorage.setItem('shipms_token', data.token);
+            localStorage.setItem('shipms_user', JSON.stringify(data.user));
+
+            showToast(
+              'Bridge Clearance Granted ⚓',
+              `Welcome aboard ${data.user.name}. Loading fleet command dashboard...`
+            );
+
+            setTimeout(() => {
+              if (window.parent) {
+                window.parent.postMessage({ type: 'SHIPMS_AUTH_SUCCESS', user: data.user }, '*');
+              }
+            }, 800);
+          }
+        );
+      } catch (err) {
+        console.error('Login error:', err);
+        playUiTone('error');
+        showToast(
+          'Connection Failed ❌',
+          'ShipMS Backend server is offline on port 5000. Please start backend.',
+          true
+        );
+        if (btnLogin) {
+          btnLogin.disabled = false;
+          btnLogin.innerHTML = '<span class="btn-text">Authorize Bridge Access</span><i class="fa-solid fa-arrow-right-to-bracket"></i>';
+        }
+      }
     });
   }
 
   // Register Submission
   if (registerForm) {
-    registerForm.addEventListener('submit', (e) => {
+    registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = document.getElementById('regName').value.trim();
       const email = document.getElementById('regEmail').value.trim();
       const role = document.getElementById('regRole').value;
       const port = document.getElementById('regPort').value.trim();
+      const pass = regPassword.value.trim();
       const terms = document.getElementById('regTerms').checked;
 
-      if (!name || !email || !role || !port) {
+      if (!name || !email || !role || !port || !pass) {
+        playUiTone('error');
         showToast('Registration Incomplete', 'Please fill in all maritime clearance fields', true);
         return;
       }
 
+      if (pass.length < 6) {
+        playUiTone('error');
+        showToast('Security Requirement', 'Clearance passcode must be at least 6 characters long', true);
+        return;
+      }
+
       if (!terms) {
+        playUiTone('error');
         showToast('IMO Compliance Required', 'You must agree to maritime SOLAS telemetry terms', true);
         return;
       }
 
-      triggerAisHandshake(
-        'Commissioning Officer Clearance...',
-        `Registering ${name} (${role}) in MongoDB Database`,
-        async () => {
-          let user = { name, email, role, port };
-          try {
-            const res = await fetch('http://localhost:5000/api/auth/register', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name, email, password: regPassword.value.trim(), role })
-            });
-            const data = await res.json();
-            if (data.success && data.user) {
-              user = data.user;
-              if (data.token) localStorage.setItem('shipms_token', data.token);
-            }
-          } catch (err) {
-            console.warn('Backend server offline, registering locally');
-          }
+      if (btnRegister) {
+        btnRegister.disabled = true;
+        btnRegister.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> <span class="btn-text">Registering Officer...</span>';
+      }
 
-          localStorage.setItem('shipms_user', JSON.stringify(user));
-          showToast(
-            'Commission Initialized Successfully!',
-            `Officer ${name} registered. Entering Bridge...`
-          );
-          
-          setTimeout(() => {
-            if (window.parent) {
-              window.parent.postMessage({ type: 'SHIPMS_AUTH_SUCCESS', user }, '*');
-            }
-          }, 1000);
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password: pass, role })
+        });
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          playUiTone('error');
+          showToast('Registration Denied ❌', data.message || 'Unable to register credentials in MongoDB.', true);
+          if (btnRegister) {
+            btnRegister.disabled = false;
+            btnRegister.innerHTML = '<span class="btn-text">Initialize Clearance</span><i class="fa-solid fa-chevron-right"></i>';
+          }
+          return;
         }
-      );
+
+        // Registration Successful! Run AIS Handshake animation
+        triggerAisHandshake(
+          'Commissioning Officer Clearance...',
+          `Registering ${data.user.name} (${data.user.role}) in MongoDB Database`,
+          () => {
+            if (data.token) localStorage.setItem('shipms_token', data.token);
+            localStorage.setItem('shipms_user', JSON.stringify(data.user));
+
+            showToast(
+              'Commission Complete ⚓',
+              `Officer ${data.user.name} registered. Entering Bridge...`
+            );
+            
+            setTimeout(() => {
+              if (window.parent) {
+                window.parent.postMessage({ type: 'SHIPMS_AUTH_SUCCESS', user: data.user }, '*');
+              }
+            }, 800);
+          }
+        );
+      } catch (err) {
+        console.error('Registration error:', err);
+        playUiTone('error');
+        showToast(
+          'Connection Failed ❌',
+          'ShipMS Backend server is offline on port 5000. Please start backend.',
+          true
+        );
+        if (btnRegister) {
+          btnRegister.disabled = false;
+          btnRegister.innerHTML = '<span class="btn-text">Initialize Clearance</span><i class="fa-solid fa-chevron-right"></i>';
+        }
+      }
     });
   }
 

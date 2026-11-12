@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     default: 'Fleet Officer',
-    enum: ['Fleet Commander', 'Master Mariner / Captain', 'AIS Navigation Controller', 'Logistics Officer', 'Fleet Officer']
+    trim: true
   },
   createdAt: {
     type: Date,
@@ -30,12 +30,11 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Pre-save password hash
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+// Pre-save password hash (Modern Mongoose async hook without next parameter)
+userSchema.pre('save', async function() {
+  if (!this.isModified('password')) return;
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  next();
 });
 
 // Compare password helper

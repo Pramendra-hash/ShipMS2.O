@@ -10,6 +10,34 @@ const generateToken = (id) => {
   return jwt.sign({ id }, JWT_SECRET, { expiresIn: '7d' });
 };
 
+// Seed demo users if not present
+const DEMO_USERS = [
+  { name: 'Capt. Vikram Solanki', email: 'commander.vikram@shipms.io', password: 'NavalCommand#2026', role: 'Fleet Commander' },
+  { name: 'Officer Priya Sharma', email: 'navigator.priya@shipms.io', password: 'OceanRoute*99', role: 'Navigation Officer' },
+  { name: 'Logistics Head Marcus', email: 'logistics.admin@shipms.io', password: 'CargoFleet@77', role: 'Cargo & Port Logistics' },
+  { name: 'Pramendra Mishra', email: 'admin@shipms.io', password: 'password123', role: 'Fleet Commander' }
+];
+
+export const seedDemoUsersIfEmpty = async () => {
+  try {
+    if (getMongoStatus()) {
+      for (const demo of DEMO_USERS) {
+        const exists = await User.findOne({ email: demo.email.toLowerCase() });
+        if (!exists) {
+          await User.create({
+            name: demo.name,
+            email: demo.email.toLowerCase(),
+            password: demo.password,
+            role: demo.role
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Demo user seed notice:', err.message);
+  }
+};
+
 export const register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -18,13 +46,17 @@ export const register = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Please provide name, email, and password' });
     }
 
+    if (password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long' });
+    }
+
     const cleanEmail = email.trim().toLowerCase();
 
     // 1. If MongoDB is connected, use Mongoose User model
     if (getMongoStatus()) {
       const existingUser = await User.findOne({ email: cleanEmail });
       if (existingUser) {
-        return res.status(400).json({ success: false, message: 'Officer with this email is already registered in MongoDB' });
+        return res.status(400).json({ success: false, message: 'Officer with this email is already registered' });
       }
 
       const newUser = await User.create({
@@ -93,51 +125,114 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ success: false, message: 'Please provide email and password' });
+      return res.status(400).json({ success: false, message: 'Please provide both email and passcode' });
     }
 
     const cleanEmail = email.trim().toLowerCase();
 
-    // 1. If MongoDB is connected, authenticate via Mongoose
+    // 1. If MongoDB is connected, authenticate strictly via Mongoose
     if (getMongoStatus()) {
-      const user = await User.findOne({ email: cleanEmail });
-      if (user) {
-        const isMatch = await user.comparePassword(password);
-        if (isMatch || password === 'password123') {
-          const token = generateToken(user._id);
-          return res.json({
-            success: true,
-            message: 'MongoDB Bridge access authorized. Welcome aboard!',
-            token,
-            user: {
-              id: user._id,
-              name: user.name,
-              email: user.email,
-              role: user.role
+      let user = await User.findOne({ email: cleanEmail });
+      
+      if (!user) {
+        // Check if matching a demo user
+        const demoMatch = DEMO_USERS.find(d => d.email.toLowerCase() === cleanEmail);
+        if (demoMatch) {
+          if (demoMatch.password === password) {
+            // Correct demo password: auto-seed this user in MongoDB with hashed password
+            try {
+              user = await User.create({
+                name: demoMatch.name,
+                email: demoMatch.email.toLowerCase(),
+                password: demoMatch.password,
+                role: demoMatch.role
+              });
+            } catch (seedErr) {
+              console.warn('Demo user auto-seed notice:', seedErr.message);
+              user = {
+                _id: 'demo_' + Date.now(),
+                name: demoMatch.name,
+                email: demoMatch.email,
+                role: demoMatch.role
+              };
             }
+          } else {
+            // Wrong password for demo account: strictly reject!
+            return res.status(401).json({
+              success: false,
+              message: 'Incorrect passcode! Access Denied.'
+            });
+          }
+        } else {
+          return res.status(401).json({
+            success: false,
+            message: 'No officer account found with this email. Please register first.'
+          });
+        }
+      } else {
+        // User exists in MongoDB: compare password with bcrypt
+        let isMatch = await user.comparePassword(password);
+        if (!isMatch && user.password === password) {
+          // If stored as plaintext from old seed, accept and upgrade to hash
+          isMatch = true;
+          const salt = await bcrypt.genSalt(10);
+          user.password = await bcrypt.hash(password, salt);
+          await user.save();
+        }
+
+        if (!isMatch) {
+          return res.status(401).json({
+            success: false,
+            message: 'Incorrect passcode! Access Denied.'
           });
         }
       }
+
+      const token = generateToken(user._id || 'demo_officer');
+      return res.json({
+        success: true,
+        message: 'MongoDB Bridge access authorized. Welcome aboard!',
+        token,
+        user: {
+          id: user._id || 'demo_officer',
+          name: user.name,
+          email: user.email,
+          role: user.role
+        }
+      });
     }
 
-    // 2. Fallback to local DB / seed admin
+    // 2. Fallback to local DB
     const db = getDB();
     const user = db.users.find(u => u.email.toLowerCase() === cleanEmail);
 
     if (!user) {
-      return res.status(401).json({ success: false, message: 'Invalid bridge credentials' });
+      // Check demo credentials
+      const demoMatch = DEMO_USERS.find(d => d.email.toLowerCase() === cleanEmail);
+      if (demoMatch && demoMatch.password === password) {
+        const token = generateToken('demo_officer');
+        return res.json({
+          success: true,
+          message: 'Bridge access authorized. Welcome aboard!',
+          token,
+          user: {
+            id: 'demo_officer',
+            name: demoMatch.name,
+            email: demoMatch.email,
+            role: demoMatch.role
+          }
+        });
+      }
+      return res.status(401).json({ success: false, message: 'Invalid email or Officer ID' });
     }
 
     let isMatch = false;
     if (user.passwordHash) {
       isMatch = await bcrypt.compare(password, user.passwordHash);
     }
-    if (!isMatch && password === 'password123') {
-      isMatch = true;
-    }
 
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid password' });
+      return res.status(401).json({ success: false, message: 'Incorrect passcode! Access Denied.' });
     }
 
     const token = generateToken(user.id);
