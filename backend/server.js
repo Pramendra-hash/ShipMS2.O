@@ -1,3 +1,5 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -6,7 +8,9 @@ import { seedDemoUsersIfEmpty } from './controllers/authController.js';
 import authRoutes from './routes/auth.js';
 import fleetRoutes from './routes/fleet.js';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 // Initialize MongoDB / Mongoose connection & seed demo officers
 connectDB().then(() => {
