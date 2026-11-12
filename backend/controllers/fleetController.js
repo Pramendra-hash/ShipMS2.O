@@ -1,11 +1,39 @@
+import Ship from '../models/Ship.js';
+import { getMongoStatus } from '../config/db.js';
 import { getDB, saveDB } from '../models/db.js';
 
-export const getFleet = (req, res) => {
+export const getFleet = async (req, res) => {
+  try {
+    if (getMongoStatus()) {
+      let ships = await Ship.find({});
+      if (ships.length === 0) {
+        // Seed initial ships into MongoDB
+        const db = getDB();
+        await Ship.insertMany(db.ships);
+        ships = await Ship.find({});
+      }
+      return res.json({ success: true, count: ships.length, data: ships, source: 'MongoDB' });
+    }
+  } catch (err) {
+    console.warn('MongoDB query fallback:', err.message);
+  }
+
   const db = getDB();
-  return res.json({ success: true, count: db.ships.length, data: db.ships });
+  return res.json({ success: true, count: db.ships.length, data: db.ships, source: 'Local JSON DB' });
 };
 
-export const getShipById = (req, res) => {
+export const getShipById = async (req, res) => {
+  try {
+    if (getMongoStatus()) {
+      const ship = await Ship.findOne({ id: req.params.id });
+      if (ship) {
+        return res.json({ success: true, data: ship });
+      }
+    }
+  } catch (err) {
+    console.warn('MongoDB query fallback:', err.message);
+  }
+
   const db = getDB();
   const ship = db.ships.find(s => s.id === req.params.id);
   if (!ship) {
@@ -14,31 +42,59 @@ export const getShipById = (req, res) => {
   return res.json({ success: true, data: ship });
 };
 
-export const updateShipStatus = (req, res) => {
+export const updateShipStatus = async (req, res) => {
   const { status } = req.body;
   if (!status) {
     return res.status(400).json({ success: false, message: 'Status is required' });
   }
 
+  let updatedShip = null;
+
+  try {
+    if (getMongoStatus()) {
+      const updateData = { status };
+      if (status === 'Inactive') {
+        updateData.speed = '0.0 kn';
+        updateData.isInactive = true;
+        updateData.powerCore = 'Auxiliary Shore Power (Engines Offline)';
+      } else if (status === 'Active') {
+        updateData.speed = '21.4 kn';
+        updateData.isInactive = false;
+        updateData.powerCore = 'Triple-E Hybrid 88MW';
+      }
+
+      updatedShip = await Ship.findOneAndUpdate(
+        { id: req.params.id },
+        { $set: updateData },
+        { new: true }
+      );
+    }
+  } catch (err) {
+    console.warn('MongoDB update fallback:', err.message);
+  }
+
   const db = getDB();
   const ship = db.ships.find(s => s.id === req.params.id);
-  if (!ship) {
+  if (ship) {
+    ship.status = status;
+    if (status === 'Inactive') {
+      ship.speed = '0.0 kn';
+      ship.progress = 0;
+      ship.powerCore = 'Auxiliary Shore Power (Engines Offline)';
+    } else if (status === 'Active') {
+      ship.speed = '21.4 kn';
+      ship.progress = 68;
+      ship.powerCore = 'Triple-E Hybrid 88MW';
+    }
+    saveDB(db);
+    if (!updatedShip) updatedShip = ship;
+  }
+
+  if (!updatedShip) {
     return res.status(404).json({ success: false, message: 'Ship not found' });
   }
 
-  ship.status = status;
-  if (status === 'Inactive') {
-    ship.speed = '0.0 kn';
-    ship.progress = 0;
-    ship.powerCore = 'Auxiliary Shore Power (Engines Offline)';
-  } else if (status === 'Active') {
-    ship.speed = '21.4 kn';
-    ship.progress = 68;
-    ship.powerCore = 'Triple-E Hybrid 88MW';
-  }
-
-  saveDB(db);
-  return res.json({ success: true, message: `Status updated to ${status}`, data: ship });
+  return res.json({ success: true, message: `Status updated to ${status}`, data: updatedShip });
 };
 
 export const getMetrics = (req, res) => {
@@ -55,10 +111,22 @@ export const getMetrics = (req, res) => {
   });
 };
 
-export const getHologramSpecs = (req, res) => {
+export const getHologramSpecs = async (req, res) => {
   const shipId = req.params.id || 'oceanic-explorer';
-  const db = getDB();
-  const ship = db.ships.find(s => s.id === shipId) || db.ships[0];
+  let ship = null;
+
+  try {
+    if (getMongoStatus()) {
+      ship = await Ship.findOne({ id: shipId });
+    }
+  } catch (err) {
+    console.warn('MongoDB hologram query fallback');
+  }
+
+  if (!ship) {
+    const db = getDB();
+    ship = db.ships.find(s => s.id === shipId) || db.ships[0];
+  }
 
   return res.json({
     success: true,

@@ -1,10 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { connectDB, getMongoStatus } from './config/db.js';
 import authRoutes from './routes/auth.js';
 import fleetRoutes from './routes/fleet.js';
 
 dotenv.config();
+
+// Initialize MongoDB / Mongoose connection
+connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,11 +31,13 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/fleet', fleetRoutes);
 
-// Health check
+// Health check with MERN Stack details
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ONLINE',
     service: 'ShipMS Maritime Intelligence Server',
+    stack: 'MERN (MongoDB + Express.js + React 19 + Node.js)',
+    database: getMongoStatus() ? 'MongoDB Connected' : 'Hybrid Local / Standby Active',
     timestamp: new Date().toISOString(),
     version: '3.4.0'
   });
@@ -40,7 +46,13 @@ app.get('/api/health', (req, res) => {
 // Root welcome
 app.get('/', (req, res) => {
   res.json({
-    message: 'ShipMS Fleet OS Backend API',
+    message: 'ShipMS Fleet OS — MERN Stack Backend API',
+    stack: {
+      M: 'MongoDB / Mongoose ODM',
+      E: 'Express.js v4 REST Framework',
+      R: 'React 19 + Tailwind CSS v4 Frontend',
+      N: 'Node.js Runtime'
+    },
     endpoints: {
       auth: ['/api/auth/register', '/api/auth/login', '/api/auth/me'],
       fleet: ['/api/fleet/ships', '/api/fleet/metrics', '/api/fleet/hologram'],
@@ -61,6 +73,6 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`⚓ ShipMS Backend Server running on port ${PORT}`);
+  console.log(`⚓ ShipMS MERN Backend Server running on port ${PORT}`);
   console.log(`🚀 API Base URL: http://localhost:${PORT}/api`);
 });
