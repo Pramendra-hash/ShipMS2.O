@@ -44,22 +44,20 @@ export default function App() {
     return true;
   };
 
-  // Toggle Hologram with Auth & Smooth Scroll
+  // Toggle Hologram (Directly opens on click, closes on click again - completely separate from login)
   const toggleHologram = () => {
-    requireAuth(() => {
-      setShowHologram(prev => {
-        const nextState = !prev;
-        if (nextState) {
-          setTimeout(() => {
-            const el = document.getElementById('hologram-toggle-section');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
-          }, 100);
-          showToast('🌐 3D Hologram 2.o Matrix Initialized');
-        } else {
-          showToast('Hologram Matrix Collapsed');
-        }
-        return nextState;
-      });
+    setShowHologram(prev => {
+      const nextState = !prev;
+      if (nextState) {
+        setTimeout(() => {
+          const el = document.getElementById('hologram-toggle-section');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+        showToast('🌐 3D Hologram 2.o Matrix Initialized');
+      } else {
+        showToast('Hologram Matrix Collapsed');
+      }
+      return nextState;
     });
   };
 
@@ -643,7 +641,6 @@ export default function App() {
               <HologramViewer
                 selectedShip={selectedShip}
                 isInactive={selectedShip.isInactive}
-                onActionRequireAuth={requireAuth}
                 onClose={() => setShowHologram(false)}
               />
             </div>

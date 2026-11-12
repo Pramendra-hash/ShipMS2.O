@@ -1,16 +1,14 @@
 import React, { useRef, useState } from 'react';
 
-export default function HologramViewer({ selectedShip, isInactive, onActionRequireAuth }) {
+export default function HologramViewer({ selectedShip, isInactive, onClose }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const iframeRef = useRef(null);
 
   const toggleFullscreen = () => {
-    if (onActionRequireAuth && !onActionRequireAuth()) return;
     setIsFullscreen(!isFullscreen);
   };
 
   const handleReload = () => {
-    if (onActionRequireAuth && !onActionRequireAuth()) return;
     if (iframeRef.current) {
       iframeRef.current.src = iframeRef.current.src;
     }
